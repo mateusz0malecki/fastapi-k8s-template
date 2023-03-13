@@ -10,4 +10,4 @@ RUN     pip install -r requirements.txt
 
 EXPOSE  8000
 
-CMD     ["bash", "-c", "wait-for-it --service db:5432 --timeout 60 && alembic upgrade head && python run_prod.py"]
+CMD     ["bash", "-c", "python run_prod.py"]

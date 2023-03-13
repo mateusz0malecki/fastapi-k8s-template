@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-template-deployment
+  labels:
+    app: fastapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fastapi
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+        - name: fastapi
+          image: gcr.io/complete-road-374207/fastapi-template
+          ports:
+            - containerPort: 8000
+        - name: cloud-sql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
+          command:
+            - "/cloud_sql_proxy"
+            - "-ip_address_types=PRIVATE"
+            - "-instances=complete-road-374207:us-central1:db-template=tcp:5432"
+            - "-credential_file=/secrets/service_account.json"
+          securityContext:
+            runAsNonRoot: true
+          volumeMounts:
+            - name: sa-secret-volume
+              mountPath: /secrets/
+              readOnly: true
+          resources:
+            requests:
+                memory: "2Gi"
+                cpu: "0.1"
+      volumes:
+        - name: sa-secret-volume
+          secret:
+            secretName: sa-secret

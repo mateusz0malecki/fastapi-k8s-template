@@ -1,3 +1,4 @@
+import subprocess
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,5 +30,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    subprocess.run(["alembic", "upgrade", "head"])
 
     return app
