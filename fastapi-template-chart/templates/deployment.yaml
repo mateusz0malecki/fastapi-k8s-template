@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app.metadata.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.app.metadata.labels.app }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app.metadata.labels.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.metadata.labels.app }}
+    spec:
+      containers:
+        - name: {{ .Values.containers.fastapi.name }}
+          image: {{ .Values.containers.fastapi.image }}:{{ .Values.containers.fastapi.imageTag }}
+          ports:
+            - containerPort: {{ .Values.containers.fastapi.containerPort }}
+        - name: {{ .Values.containers.sqlProxy.name }}
+          image: {{ .Values.containers.sqlProxy.image }}:{{ .Values.containers.sqlProxy.imageTag }}
+          command:
+            {{- range .Values.containers.sqlProxy.command }}
+            - {{ . | quote }}
+            {{- end }}
+          securityContext:
+            runAsNonRoot: {{ .Values.containers.sqlProxy.security.runAsNonRoot }}
+          volumeMounts:
+            - name: {{ .Values.volumes.saSecret.name }}
+              mountPath: /secrets/
+              readOnly: true
+          resources:
+            requests:
+                memory: {{ .Values.containers.sqlProxy.resources.memory | quote }}
+                cpu: {{ .Values.containers.sqlProxy.resources.cpu | quote }}
+      volumes:
+        - name: {{ .Values.volumes.saSecret.name }}
+          secret:
+            secretName: {{ .Values.volumes.saSecret.secretName }}

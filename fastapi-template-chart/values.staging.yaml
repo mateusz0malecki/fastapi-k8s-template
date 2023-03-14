@@ -1,0 +1,45 @@
+replicaCount: 1
+
+service:
+  metadata:
+    name: api-template-service
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+app:
+  metadata:
+    name: api-template-deployment
+    labels:
+      app: fastapi
+
+containers:
+  fastapi:
+    name: fastapi
+    image: gcr.io/complete-road-374207/fastapi-template
+    imageTag: v1-staging
+    containerPort: 8000
+  sqlProxy:
+    name: cloud-sql-proxy
+    image: gcr.io/cloudsql-docker/gce-proxy
+    imageTag: 1.28.0
+    resources:
+      memory: 2Gi
+      cpu: 0.1
+    security:
+      runAsNonRoot: true
+    command:
+      - "/cloud_sql_proxy"
+      - "-ip_address_types=PRIVATE"
+      - "-instances=complete-road-374207:us-central1:db-template=tcp:5432"
+      - "-credential_file=/secrets/service_account.json"
+volumes:
+  saSecret:
+    name: sa-secret-volume
+    secretName: sa-secret
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
