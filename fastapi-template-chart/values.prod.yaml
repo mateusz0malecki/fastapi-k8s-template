@@ -5,7 +5,7 @@ service:
     name: api-template-service
   type: LoadBalancer
   port: 80
-  targetPort: 5000
+  targetPort: 8000
 
 app:
   metadata:
@@ -18,7 +18,7 @@ containers:
     name: fastapi
     image: gcr.io/complete-road-374207/fastapi-template
     imageTag: v1
-    containerPort: 5000
+    containerPort: 8000
   sqlProxy:
     name: cloud-sql-proxy
     image: gcr.io/cloudsql-docker/gce-proxy
